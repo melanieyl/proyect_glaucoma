@@ -3,37 +3,104 @@
 <head>
   <meta charset="utf-8" />
   <title>Clasificación de Glaucoma</title>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    p {
+      margin-top: 5px;
+    }
+    .preview {
+      margin-top: 15px;
+      max-width: 300px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 12px;
+      background: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: gray;
+      cursor: not-allowed;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      display: inline-block;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+      min-width: 250px;
+    }
+  </style>
 </head>
 <body>
-  <h2 style="text-align:center">Sube una imagen de fondo de ojo</h2>
-
-  <form id="inputForm" enctype="multipart/form-data" style="text-align:center">
-    <input type="file" name="file" accept="image/*" />
-    <div style="margin-top: 12px;">
-      <button type="button" onclick="getResult()">Enviar</button>
+  <h2>Proyecto MLOps: Clasificación de Glaucoma</h2>
+  <p> Sube una imagen del ojo</p>
+  <form id="inputForm" enctype="multipart/form-data">
+    <input type="file" id="fileInput" name="file" accept="image/*" required />
+    <div>
+      <img id="previewImage" class="preview" style="display:none;" />
     </div>
+    <button type="button" id="submitBtn" onclick="getResult()">Enviar</button>
   </form>
 
-  <div id="result" style="margin-top: 20px; text-align:center;"></div>
+  <div id="result"></div>
 
   <script>
-    function getResult() {
-      var form_data = new FormData($('#inputForm')[0]);
-      $.ajax({
-        type: 'POST',
-        url: '/predict',
-        data: form_data,
-        contentType: false,
-        cache: false,
-        processData: false,
-        success: function(data) {
-          $("#result").html(data);
-        },
-        error: function(xhr) {
-          $("#result").html(xhr.responseText || "Error");
-        }
-      });
+    // Vista previa de imagen
+    document.getElementById("fileInput").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          document.getElementById("previewImage").src = ev.target.result;
+          document.getElementById("previewImage").style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    async function getResult() {
+      const form = document.getElementById("inputForm");
+      const formData = new FormData(form);
+      const btn = document.getElementById("submitBtn");
+      const result = document.getElementById("result");
+
+      btn.disabled = true;
+      result.innerHTML = "<p>Procesando...</p>";
+
+      try {
+        const response = await fetch("/predict", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) throw new Error("Error en la predicción");
+
+        const data = await response.text();
+        result.innerHTML = data;
+      } catch (err) {
+        result.innerHTML = `<p style="color:red;">❌ ${err.message}</p>`;
+      } finally {
+        btn.disabled = false;
+      }
     }
   </script>
 </body>
