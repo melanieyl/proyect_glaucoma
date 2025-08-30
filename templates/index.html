@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Clasificación de Glaucoma</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+  <h2 style="text-align:center">Sube una imagen de fondo de ojo</h2>
+
+  <form id="inputForm" enctype="multipart/form-data" style="text-align:center">
+    <input type="file" name="file" accept="image/*" />
+    <div style="margin-top: 12px;">
+      <button type="button" onclick="getResult()">Enviar</button>
+    </div>
+  </form>
+
+  <div id="result" style="margin-top: 20px; text-align:center;"></div>
+
+  <script>
+    function getResult() {
+      var form_data = new FormData($('#inputForm')[0]);
+      $.ajax({
+        type: 'POST',
+        url: '/predict',
+        data: form_data,
+        contentType: false,
+        cache: false,
+        processData: false,
+        success: function(data) {
+          $("#result").html(data);
+        },
+        error: function(xhr) {
+          $("#result").html(xhr.responseText || "Error");
+        }
+      });
+    }
+  </script>
+</body>
+</html>
