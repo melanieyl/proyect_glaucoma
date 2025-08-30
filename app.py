@@ -80,9 +80,6 @@ def predict():
         # Respuesta HTML (compatible con tu front actual)
         return f"<h3>Predicción: {label}</h3><p>Confianza: {conf:.2%}</p>"
 
-        # Si prefieres JSON:
-        # return jsonify({"label": label, "confidence": conf, "probs": probs.tolist()})
-
     except Exception as e:
         return f"Error en predicción: {str(e)}", 500
     finally:
